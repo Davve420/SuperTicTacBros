@@ -1,0 +1,6 @@
+@SuperTicTacBros_HostAddress = http://localhost:5069
+
+GET {{SuperTicTacBros_HostAddress}}/api/
+Accept: application/json
+
+###

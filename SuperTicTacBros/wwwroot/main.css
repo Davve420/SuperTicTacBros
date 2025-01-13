@@ -1,0 +1,41 @@
+body {
+    font-family: 'Press Start 2P', cursive;
+    background: url('mario-background.png') no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+    text-align: center;
+    margin: 0;
+}
+
+#game {
+    padding: 20px;
+    max-width: 400px;
+    margin: auto;
+}
+
+#board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.cell {
+    width: 100px;
+    height: 100px;
+    background-color: #f9d71c;
+    border: 3px solid #d48913;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.cell.taken {
+    pointer-events: none;
+    background-color: #d48913;
+}
+
+#question-container {
+    margin-top: 20px;
+}

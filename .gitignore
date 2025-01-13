@@ -1,0 +1,34 @@
+
+.DS_Store
+.idea/
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+
+
+.vs/                # Visual Studio
+.vscode/            # VS Code
+
+# Windows-specific files
+Thumbs.db
+ehthumbs.db
+
+# Ignore appsettings for security reasons (Optional)
+appsettings.Development.json
+
+# IDE-related files
+/developer         # Ignore Rider's .developer file
+
+# Ignore Visual Studio code coverage files
+*.vsp
+*.vspscc
+*.vssscc
+
+# User-specific files and preferences
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
