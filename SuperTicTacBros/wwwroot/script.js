@@ -3,7 +3,8 @@ async function test(){
     const result = await response.json()
     console.log(result)
 }
-await test()
+
+ await test()
 
 
 const board = document.querySelectorAll('.cell');
