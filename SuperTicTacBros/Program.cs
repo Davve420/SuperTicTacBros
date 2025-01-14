@@ -47,7 +47,7 @@ static string GenerateUniqueClientId()
 // Routes are defined and registered for listening for network requests
 // in the constructors of the initalized classed below
 // and then in turn processed by methods as called from the routes definitions 
-//SuperTicTacBros Game = new(app);
+SuperTicTacBros Game = new(app);
 
 
 // start the web application
