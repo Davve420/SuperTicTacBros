@@ -1,14 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic Tac Toe - Super Mario</title>
     <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
+
 <body>
-<div id="game">
-    <h1>Super Mario Tic Tac Toe</h1>
+    <div id="game">
+        <!-- Enbart en kommentar, detta är vår rubrik, men är en bild - möjligt att göra om till vanlig text såklart men tänkte fet med bilden-->
+        <source> <img
+            src="https://s3-alpha-sig.figma.com/img/6f4c/dbfa/02bc1ea4b25c09ecc8666583bd2afdf3?Expires=1737936000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=T6DBNZYpwAHYzLDpZpqIaOVS1TEXPAyETx3af7mMgN5RoSdzmbs1siSTpVWHz9RahyPMtQxtPfUfNfR8i0gC3vjElhL9pobf0H0TBHF~G5XT~dZ79~cq87y4Mu2earskSjfHcQdhk76DdB1PC5Hnt11xf5OxukZC5yT9XwMnToDUBdsUzTXjl8k3b1~3Yl4JSirhQ4zkliq1fF~cIjuj0iZUN5fx4TOc0pptUzPVNc6MqWFdYquxsx0Qn0YVeL6tUzhx95jA3Wz4FQo-P~VmYBsDcqkmpriOMgcCSjFW7JXaq-8P-HkrzRJi~zgF0lsI0UjHw7B4n93jylqj3rNLsQ__"
+            alt="Super Tic-Tac-Toe">
+    </div>
+    <div id="timer-container">
+        <p id="timer">5</p> <!--Timer som måste ställas in med JS-->
+    </div>
+    <div id="question" style="text-align: center;">
+        <h2 id="question-title">HÄR SKA FRÅGAN STÄLLAS?</h2>
+    </div>
+    <div>
+        <input type="text" id="answer" placeholder="Kan du svaret...?">
+        <button id="submit-answer">Svar</button>
+    </div>
+    <br><br>
+    </div>
+
     <div id="board">
         <!-- Rutor i spelbrädet -->
         <div class="cell" data-cell="0"></div>
@@ -21,13 +41,10 @@
         <div class="cell" data-cell="7"></div>
         <div class="cell" data-cell="8"></div>
     </div>
-    <div id="question-container" style="display:none;">
-        <p id="question"></p>
-        <input type="text" id="answer" placeholder="Skriv ditt svar här...">
-        <button id="submit-answer">Svar</button>
-    </div>
+
     <p id="message"></p>
-</div>
-<script src="script.js"></script>
+    </div>
+    <script src="script.js"></script>
 </body>
+
 </html>

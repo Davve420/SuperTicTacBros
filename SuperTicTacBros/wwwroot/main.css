@@ -2,28 +2,105 @@ body {
     font-family: 'Press Start 2P', cursive;
     background: url('mario-background.png') no-repeat center center fixed;
     background-size: cover;
-    color: white;
+    background-color: rgb(236, 33, 33);
+    color: rgb(0, 0, 0);
     text-align: center;
-    margin: 0;
+    margin: 12px;
+}
+
+/* Timer-container */
+#timer-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Timer-styling */
+#timer {
+    font-family: 'Press Start 2P', cursive;
+    /* Samma font som resten av spelet */
+    font-size: 16px;
+    color: white;
+    background-color: black;
+    padding: 10px 20px;
+    display: inline-block;
+    border-radius: 10px;
+    text-shadow: 2px 2px 4px #ff0000;
+    /* Skugga för retro-effekt */
+    border: 2px solid white;
 }
 
 #game {
-    padding: 20px;
-    max-width: 400px;
-    margin: auto;
+    img {
+        max-width: 100%;
+        height: 150px;
+        display: inline-block;
+        align: center;
+        flex: auto;
+    }
+
+    width: auto;
+    height: auto;
+    display: block;
 }
 
 #board {
+    background-color: #555151;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
+    border-radius: 6px;
+    padding: 30px;
+    /* Lägger till inre avstånd */
+    margin: auto;
+    /* Centrerar elementet horisontellt och vertikalt */
+    width: max-content;
+    /* Sätter bredd till det som behövs för innehållet */
+    height: max-content;
+    padding: 2%
+}
+
+
+#question {
+    font-size: 12px;
+}
+
+#answer {
+    font-family: 'Press Start 2P', cursive;
+    /* Samma font som rubriken */
+    font-size: 14px;
+    padding: 10px;
+    border: 2px solid black;
+    border-radius: 5px;
+    width: 250px;
+    background-color: #fff;
+    color: #000;
+}
+
+#submit-answer {
+    font-family: 'Press Start 2P', cursive;
+    /* Samma font */
+    font-size: 14px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    /* Grön färg */
+    color: white;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+#submit-answer:hover {
+    background-color: #45a049;
+    /* Lite mörkare när du hovrar */
 }
 
 .cell {
     width: 100px;
     height: 100px;
-    background-color: #f9d71c;
-    border: 3px solid #d48913;
+    background-color: #ffffff;
+    border: 3px solid #000000;
+    border-radius: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -33,7 +110,7 @@ body {
 
 .cell.taken {
     pointer-events: none;
-    background-color: #d48913;
+    background-color: #f00909;
 }
 
 #question-container {
