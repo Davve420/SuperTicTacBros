@@ -1,91 +1,235 @@
-async function test(){
-    const response = await fetch("/api/test")
-    const result = await response.json()
-    console.log(result)
-}
+let player = null;
+let game = null;
+let playedTiles = [];
+let currentQuestion = null;
+let canPlay = false;
 
- await test()
-
-
-const board = document.querySelectorAll('.cell');
-const questionContainer = document.getElementById('question-container');
-const questionText = document.getElementById('question');
-const answerInput = document.getElementById('answer');
-const submitAnswerButton = document.getElementById('submit-answer');
-const message = document.getElementById('message');
-
-let currentPlayer = 'X'; // Växlar mellan X och O
-let gameActive = true;
-
-// Backend-länk
-const API_URL = 'https://localhost:5001/api/game';
-
-board.forEach(cell => {
-    cell.addEventListener('click', () => {
-        if (!cell.classList.contains('taken') && gameActive) {
-            // Visa fråga
-            fetch(API_URL + '/question')
-                .then(response => response.json())
-                .then(data => {
-                    questionText.textContent = data.question;
-                    questionContainer.style.display = 'block';
-                });
-            // Vänta på svar
+// refresh is a sequence to handle reflecting the current game state for any connected user
+async function refresh() {
+    if (!player) {
+        $('#add-player').show()
+    } else {
+        $('#add-player').hide()
+        if (!game) {
+            $('#add-game').show()
+        } else {
+            $('#add-game').hide()
         }
-    });
-});
+    }
 
-submitAnswerButton.addEventListener('click', () => {
-    const userAnswer = answerInput.value;
-    fetch(API_URL + '/answer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answer: userAnswer })
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.correct) {
-                makeMove(); // Gör draget
-            } else {
-                message.textContent = 'Fel svar! Turen går över.';
-                switchPlayer();
+    if (!player || !game) {
+        $('#tictactoe input').prop('disabled', true);
+    } else {
+        let timeout = setTimeout(async function () {
+            const response = await fetch('/api/played-tiles/' + game.id);
+            const playedTilesUpdate = await response.json();
+            if (playedTilesUpdate != playedTiles) {
+                playedTiles = playedTilesUpdate
+                showPlayableTiles(playedTiles)
+                tellTurn(playedTiles)
             }
-            questionContainer.style.display = 'none';
-            answerInput.value = '';
-        });
-});
 
-function makeMove() {
-    const selectedCell = Array.from(board).find(cell => !cell.classList.contains('taken'));
-    selectedCell.textContent = currentPlayer;
-    selectedCell.classList.add('taken');
+            if (await checkWin(game)) {
+                clearTimeout(timeout);
+                return;
+            }
+            await refresh()
+        }, 300)
+    }
 
-    // Kontrollera om någon har vunnit
-    checkWinner();
-    switchPlayer();
-}
+    // Kontrollera spelstatus och frågor
+    if (game) {
+        const playersResponse = await fetch('/api/check-players/' + game.id);
+        const players = await playersResponse.json();
 
-function switchPlayer() {
-    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-}
-
-function checkWinner() {
-    // Enkel vinstkontroll (3 rutor i rad)
-    const winPatterns = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],
-        [0, 4, 8], [2, 4, 6]
-    ];
-    for (const pattern of winPatterns) {
-        const [a, b, c] = pattern;
-        if (
-            board[a].textContent &&
-            board[a].textContent === board[b].textContent &&
-            board[a].textContent === board[c].textContent
-        ) {
-            message.textContent = `Spelare ${currentPlayer} vinner!`;
-            gameActive = false;
+        if (!players.bothConnected) {
+            $('#message2').html('<strong>Väntar på andra spelaren...</strong>');
+            $('#answer-form').removeClass('active');
+            currentQuestion = null;
+            currentQuestionId = null;
             return;
+        }
+
+        // Visa ny fråga endast om det inte finns en aktiv fråga och båda spelarna är anslutna
+        if (!currentQuestion && !canPlay && players.bothConnected) {
+            await getNewQuestion();
+        }
+
+        // Kontrollera om motståndaren har svarat
+        if (currentQuestionId && !canPlay) {
+            const checkAnswer = await fetch(`/api/check-question/${game.id}/${currentQuestionId}`);
+            const answerStatus = await checkAnswer.json();
+            if (answerStatus.answered) {
+                $('#answer-form').removeClass('active');
+                $('#message2').html(`<strong>Andra spelaren svarade rätt först!</strong>`);
+                $('#message').text('Vänta på din tur...');
+                currentQuestion = null;
+                currentQuestionId = null;
+            }
         }
     }
 }
+
+// first call refresh when page has loaded to reflect inital state / rebuild current state
+refresh()
+
+
+function showPlayableTiles(playedTiles) {
+    const playedTilesHash = {}
+    for (let tile of playedTiles) {
+        playedTilesHash[tile.tile] = tile
+    }
+    // Aktivera alla rutor som inte är tagna
+    $('#tictactoe input').prop('disabled', false);
+    $('#tictactoe input').each(function () {
+        let tile = playedTilesHash[$(this).index()];
+        if (tile?.tile > -1) {
+            $(this).prop('disabled', true);
+            if (tile.player === player.id) {
+                $(this).val(player.tile)
+            } else {
+                $(this).val(player.tile === 'X' ? 'O' : 'X')
+            }
+        }
+    })
+}
+
+function tellTurn(playedTiles) {
+    let yourMoves = 0;
+    let otherMoves = 0;
+    for (let tile of playedTiles) {
+        if (tile.player === player.id) {
+            yourMoves++
+        } else {
+            otherMoves++
+        }
+    }
+
+    // Om spelaren har svarat rätt på frågan, låt dem spela oavsett X eller O
+    if (canPlay) {
+        $('#message').text('Du svarade rätt! Din tur att lägga!');
+        $('#tictactoe input:not([value])').prop('disabled', false);
+    } else {
+        $('#message').text('Svara rätt på frågan för att få lägga!');
+        $('#tictactoe input').prop('disabled', true);
+    }
+}
+
+async function checkWin() {
+    const response = await fetch('/api/check-win/' + game.id);
+    const win = await response.json();
+    if (win) {
+        $('#message').text('Raden ' + win.join(' - ') + ' vann!')
+        // disable tiles
+        $('#tictactoe input').prop('disabled', true);
+        // show winning row
+        $('#tictactoe input').each(function () {
+            if (win.includes($(this).index())) {
+                $(this).css('background-color', 'yellow')
+            }
+        })
+        return true;
+    }
+    return false;
+}
+
+
+$('#add-player').on('submit', addPlayer) // onsubmit for the addPlayer form
+
+async function addPlayer(e) {
+    e.preventDefault()
+    const playerName = $('#add-player>[name="name"]').val()
+    const response = await fetch('/api/add-player/', { // post
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: playerName })
+    });
+    player = await response.json();
+    $('#message').text(player.name + ' was added to the game')
+    refresh()
+}
+
+$('#add-game').on('submit', addGame) // onsubmit for the addGame form
+
+async function addGame(e) {
+    e.preventDefault()
+    const gamecode = $('#add-game>[name="gamecode"]').val()
+    const response = await fetch('/api/current-game/' + gamecode)
+    game = await response.json();
+    player.tile = (player.id === game.player_1) ? 'X' : 'O';
+
+    if (game) {
+        $('#message').text('Ansluten till spel: ' + game.gamecode);
+        $('#message2').html('<strong>Väntar på andra spelaren...</strong>');
+        $('#answer-form').removeClass('active');
+    } else {
+        $('#message').text('Hittade inget spel med koden ' + gamecode);
+    }
+    await refresh();
+}
+
+$('#tictactoe>input').off('click').on('click', async function () {
+    if (!canPlay) {
+        $('#message2').text('Du måste svara rätt på frågan först!');
+        return;
+    }
+
+    let tileIndex = $(this).index();
+    const response = await fetch('/api/play-tile/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            tile: tileIndex,
+            player: player.id,
+            game: game.id
+        })
+    });
+
+    const moveAccepted = await response.json();
+    if (moveAccepted) {
+        $(this).val(player.tile);
+        $('#message').text('Drag accepterat!');
+        canPlay = false;
+        currentQuestion = null;
+        currentQuestionId = null;
+        $('#message2').html('');
+        $('#answer-form').removeClass('active');
+        $('#tictactoe input').prop('disabled', true);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await getNewQuestion();
+    } else {
+        $('#message').text('Denna ruta är redan tagen');
+    }
+    await refresh();
+});
+
+
+$('#answer-form').on('submit', async function (e) {
+    e.preventDefault();
+    const answer = $('#answer-form input[name="answer"]').val();
+
+    if (answer.toLowerCase() === currentQuestion.answer.toLowerCase()) {
+        canPlay = true;
+        $('#message').html('<strong>Rätt svar!</strong> Din tur att spela!');
+        $('#answer-form').removeClass('active');
+        $('#tictactoe input:not([value])').prop('disabled', false);
+        $('#answer-form input[name="answer"]').val('');
+
+        // Spara i databasen att denna fråga är besvarad
+        await fetch('/api/answer-question', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                questionId: currentQuestionId,
+                gameId: game.id,
+                playerId: player.id
+            })
+        });
+
+        // Andra spelaren ska se att de förlorade racet
+        $('#message2').html(`<strong>Du svarade rätt först!</strong>`);
+    } else {
+        $('#message').text('Fel svar! Försök igen!');
+    }
+});
+

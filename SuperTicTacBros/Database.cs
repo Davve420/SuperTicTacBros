@@ -9,8 +9,8 @@ public class Database
     private readonly string _host = "localhost";
     private readonly string _port = "5432";
     private readonly string _username = "postgres";
-    private readonly string _password = "Fantomen04"; // root OR postgres
-    private readonly string _database = "tictactoe";
+    private readonly string _password = "12345"; // root OR postgres
+    private readonly string _database = "tictactoetest";
 
     private NpgsqlDataSource _connection;
 
